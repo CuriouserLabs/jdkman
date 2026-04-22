@@ -7,7 +7,18 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "type-check": "tsc --noEmit",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "tauri:build:debug": "tauri build --debug",
+    "tauri:bundle": "tauri build --bundles nsis",
+    "tauri:bundle:msi": "tauri build --bundles msi",
+    "tauri:bundle:all": "tauri build --bundles nsis,msi",
+    "tauri:icon": "tauri icon",
+    "tauri:info": "tauri info",
+    "install:deps": "npm install",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
@@ -26,6 +37,7 @@
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
+    "rimraf": "^5.0.0",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.0"

@@ -48,8 +48,11 @@ export function Versions() {
   const handleUse = async (alias: string) => {
     setBusyAlias(alias);
     try {
-      await useJdk(alias);
+      const warning = await useJdk(alias);
       showToast("success", `Switched to ${alias}. Open a new terminal for changes to take effect.`);
+      if (warning) {
+        showToast("warning", `System environment not updated — run as Administrator to apply changes system-wide.`);
+      }
       await load();
     } catch (e) { showToast("error", String(e)); }
     finally { setBusyAlias(null); }

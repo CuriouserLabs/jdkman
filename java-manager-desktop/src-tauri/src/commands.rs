@@ -26,8 +26,10 @@ pub fn remove_jdk(alias: String) -> Result<(), String> {
     operations::remove_jdk(&alias).map_err(|e| e.to_string())
 }
 
+/// Returns `Ok(Some(warning))` if the user env was updated but system env (HKLM) failed
+/// (likely needs admin), or `Ok(None)` on full success.
 #[command]
-pub fn use_jdk(alias: String) -> Result<(), String> {
+pub fn use_jdk(alias: String) -> Result<Option<String>, String> {
     operations::use_jdk(&alias).map_err(|e| e.to_string())
 }
 

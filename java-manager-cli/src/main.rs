@@ -179,7 +179,7 @@ fn cmd_remove(alias: &str, force: bool) -> anyhow::Result<()> {
 
 fn cmd_use(alias: &str) -> anyhow::Result<()> {
     print!("Switching to '{}'... ", alias.cyan());
-    operations::use_jdk(alias).map_err(|e| anyhow::anyhow!("{e}"))?;
+    let warning = operations::use_jdk(alias).map_err(|e| anyhow::anyhow!("{e}"))?;
     println!("{}", "Done".green());
 
     let config = java_manager_core::config::load_config()?;
@@ -194,9 +194,22 @@ fn cmd_use(alias: &str) -> anyhow::Result<()> {
 
     println!();
     println!(
-        "{} PATH and JAVA_HOME updated in your user environment.",
+        "{} PATH and JAVA_HOME updated in user environment (HKCU).",
         "ℹ".blue()
     );
+    if let Some(warn) = warning {
+        println!(
+            "{} System environment (HKLM) not updated: {}",
+            "⚠".yellow(),
+            warn.dimmed()
+        );
+        println!("  Run as Administrator to also apply changes system-wide.");
+    } else {
+        println!(
+            "{} System environment (HKLM) updated — all users and new processes will see the change.",
+            "✔".green()
+        );
+    }
     println!(
         "{} Open a {} terminal for the changes to take effect in shells.",
         "⚠".yellow(),

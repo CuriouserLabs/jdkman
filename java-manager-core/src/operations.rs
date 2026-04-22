@@ -1,7 +1,7 @@
 use crate::config::{
     add_version, load_config, remove_version, set_current, update_version,
 };
-use crate::env::{apply_java_version, get_java_home};
+use crate::env::{apply_java_version, get_java_home, ApplyResult};
 use crate::errors::{JdkManagerError, Result};
 use crate::java::{
     create_jdk_entry, detect_version, normalize_path, run_java_version, suggest_alias,
@@ -43,8 +43,10 @@ pub fn remove_jdk(alias: &str) -> Result<()> {
     Ok(())
 }
 
-/// Switch the active Java version: updates JAVA_HOME, PATH, and config.
-pub fn use_jdk(alias: &str) -> Result<()> {
+/// Switch the active Java version: updates JAVA_HOME and PATH in both user and system
+/// environments, then updates config. Returns an optional warning if the system-level
+/// (HKLM) update failed — typically because the app is not running as administrator.
+pub fn use_jdk(alias: &str) -> Result<Option<String>> {
     let config = load_config()?;
     let entry = config
         .versions
@@ -53,16 +55,22 @@ pub fn use_jdk(alias: &str) -> Result<()> {
 
     validate_jdk_path(&entry.path)?;
 
-    // Collect all managed bins so we can remove them from PATH
     let managed_bins: Vec<String> = config
         .versions
         .values()
         .map(|v| format!("{}\\bin", normalize_path(&v.path)))
         .collect();
 
-    apply_java_version(&entry.path, &managed_bins)?;
+    let ApplyResult { system_updated: _, system_error } =
+        apply_java_version(&entry.path, &managed_bins)?;
     set_current(alias)?;
-    Ok(())
+
+    let warning = system_error.map(|_| {
+        "System environment (HKLM) could not be updated — run as Administrator to apply \
+         changes system-wide. User environment was updated successfully."
+            .to_string()
+    });
+    Ok(warning)
 }
 
 /// Return the currently selected alias (from config).

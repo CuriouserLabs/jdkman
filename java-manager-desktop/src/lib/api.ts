@@ -17,7 +17,8 @@ export const addJdk = (alias: string, path: string): Promise<void> =>
 export const removeJdk = (alias: string): Promise<void> =>
   invoke("remove_jdk", { alias });
 
-export const useJdk = (alias: string): Promise<void> =>
+/** Returns a warning string if system env (HKLM) could not be updated (needs admin), or null on full success. */
+export const useJdk = (alias: string): Promise<string | null> =>
   invoke("use_jdk", { alias });
 
 export const verifyJdk = (alias: string): Promise<VerifyResult> =>
