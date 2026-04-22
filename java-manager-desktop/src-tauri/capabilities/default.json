@@ -1,0 +1,10 @@
+{
+  "identifier": "default",
+  "description": "Default capability for JDK Manager",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:allow-open",
+    "shell:allow-open"
+  ]
+}

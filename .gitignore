@@ -1,0 +1,17 @@
+# Rust build artifacts
+/target/
+
+# Node / frontend
+java-manager-desktop/node_modules/
+java-manager-desktop/dist/
+java-manager-desktop/gen/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+*.local

@@ -1,0 +1,14 @@
+[package]
+name = "java-manager-cli"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "jdkman"
+path = "src/main.rs"
+
+[dependencies]
+java-manager-core = { path = "../java-manager-core" }
+clap = { version = "4", features = ["derive", "color"] }
+anyhow = { workspace = true }
+colored = "2"
