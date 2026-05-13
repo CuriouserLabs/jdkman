@@ -350,7 +350,9 @@ jdkman/
 
 ## License
 
-<!-- TODO: Add license information -->
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+Summary: you are free to use, copy, modify, and distribute this software under the terms of the MIT License.
 
 ---
 
