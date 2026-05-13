@@ -8,6 +8,7 @@ use crate::java::{
     validate_jdk_path,
 };
 use crate::models::{EnvStatus, JavaVersion, VerifyResult};
+use crate::process::command;
 
 /// Return all configured Java versions, sorted by alias.
 pub fn list_versions() -> Result<Vec<JavaVersion>> {
@@ -149,7 +150,7 @@ pub fn refresh_jdk_metadata(alias: &str) -> Result<()> {
 }
 
 fn which(cmd: &str) -> Option<String> {
-    let output = std::process::Command::new("where")
+    let output = command("where")
         .arg(cmd)
         .output()
         .ok()?;

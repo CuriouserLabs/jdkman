@@ -5,6 +5,7 @@
 java-manager-desktop/node_modules/
 java-manager-desktop/dist/
 java-manager-desktop/gen/
+java-manager-desktop/src-tauri/resources/jdkman.exe
 
 # Editor
 .vscode/*

@@ -75,7 +75,7 @@ cd java-manager-desktop
 cd ui && npm run build && cd ..
 
 # Build the full Tauri release bundle
-cargo tauri build
+npm run tauri:build
 ```
 
 ### Output locations
@@ -87,6 +87,9 @@ cargo tauri build
 | MSI installer | `target\release\bundle\msi\JDK Manager_0.1.0_x64_en-US.msi` |
 
 The NSIS installer installs for the **current user** (no admin required).
+During installation it now prompts whether to also install the `jdkman` CLI.
+If the user chooses that option, the installer keeps `jdkman.exe` under the app's
+`resources` folder and adds that folder to the user's `PATH`.
 
 ---
 

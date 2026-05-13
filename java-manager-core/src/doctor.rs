@@ -2,7 +2,7 @@ use crate::config::load_config;
 use crate::env::get_java_home;
 use crate::java::validate_jdk_path;
 use crate::models::{CheckStatus, DiagnosticCheck, DiagnosticResult};
-use std::process::Command;
+use crate::process::command;
 
 pub fn run_diagnostics() -> DiagnosticResult {
     let mut checks: Vec<DiagnosticCheck> = Vec::new();
@@ -127,7 +127,7 @@ pub fn run_diagnostics() -> DiagnosticResult {
 }
 
 fn which(cmd: &str) -> Option<String> {
-    let output = Command::new("where").arg(cmd).output().ok()?;
+    let output = command("where").arg(cmd).output().ok()?;
     if !output.status.success() {
         return None;
     }

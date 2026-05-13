@@ -1,7 +1,7 @@
 use crate::errors::{JdkManagerError, Result};
 use crate::models::JdkEntry;
+use crate::process::command;
 use std::path::Path;
-use std::process::Command;
 
 /// Returns Ok if the path contains a valid JDK (has bin/java.exe and bin/javac.exe).
 pub fn validate_jdk_path(path: &str) -> Result<()> {
@@ -64,7 +64,7 @@ pub fn detect_version(path: &str) -> Option<(String, String)> {
     if !java_exe.exists() {
         return None;
     }
-    let output = Command::new(&java_exe).arg("-version").output().ok()?;
+    let output = command(&java_exe).arg("-version").output().ok()?;
     // java -version writes to stderr
     let stderr = String::from_utf8_lossy(&output.stderr);
     parse_java_version_output(&stderr)
@@ -93,7 +93,7 @@ fn parse_java_version_output(output: &str) -> Option<(String, String)> {
 
 /// Run java -version for a specific java.exe and return the output string.
 pub fn run_java_version(java_exe: &str) -> Option<String> {
-    let output = Command::new(java_exe).arg("-version").output().ok()?;
+    let output = command(java_exe).arg("-version").output().ok()?;
     let stderr = String::from_utf8_lossy(&output.stderr);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let combined = format!("{stderr}{stdout}");
