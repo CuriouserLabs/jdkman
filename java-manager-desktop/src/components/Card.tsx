@@ -21,8 +21,7 @@ export function Card({ children, className, padding = "md", style, onClick }: Ca
       style={style}
       onClick={onClick}
       className={clsx(
-        "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700",
-        "rounded-xl shadow-sm",
+        "app-paper rounded-2xl",
         paddingClasses[padding],
         className
       )}

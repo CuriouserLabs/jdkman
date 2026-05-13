@@ -191,6 +191,46 @@ mod platform {
         Ok(())
     }
 
+    pub fn is_elevated() -> bool {
+        use windows_sys::Win32::Foundation::BOOL;
+        use windows_sys::Win32::Security::{
+            AllocateAndInitializeSid, CheckTokenMembership, FreeSid, SID_IDENTIFIER_AUTHORITY,
+        };
+        const SECURITY_BUILTIN_DOMAIN_RID: u32 = 0x0000_0020;
+        const DOMAIN_ALIAS_RID_ADMINS: u32 = 0x0000_0220;
+
+        unsafe {
+            let mut nt_authority = SID_IDENTIFIER_AUTHORITY {
+                Value: [0, 0, 0, 0, 0, 5],
+            };
+            let mut admin_group = std::ptr::null_mut();
+
+            let sid_ok = AllocateAndInitializeSid(
+                &mut nt_authority,
+                2,
+                SECURITY_BUILTIN_DOMAIN_RID,
+                DOMAIN_ALIAS_RID_ADMINS,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                &mut admin_group,
+            );
+
+            if sid_ok == 0 || admin_group.is_null() {
+                return false;
+            }
+
+            let mut is_member: BOOL = 0;
+            let membership_ok = CheckTokenMembership(0, admin_group, &mut is_member);
+            FreeSid(admin_group);
+
+            membership_ok != 0 && is_member != 0
+        }
+    }
+
     /// Scan the Windows registry for registered JDK installations.
     pub fn registry_jdk_homes() -> Vec<String> {
         let mut homes = Vec::new();
@@ -262,6 +302,9 @@ mod platform {
     pub fn broadcast_env_change() -> Result<()> {
         Ok(())
     }
+    pub fn is_elevated() -> bool {
+        false
+    }
     pub fn registry_jdk_homes() -> Vec<String> {
         Vec::new()
     }
@@ -325,6 +368,10 @@ pub fn broadcast_env_change() -> Result<()> {
 
 pub fn registry_jdk_homes() -> Vec<String> {
     platform::registry_jdk_homes()
+}
+
+pub fn is_elevated() -> bool {
+    platform::is_elevated()
 }
 
 #[cfg(test)]

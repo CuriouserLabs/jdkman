@@ -33,11 +33,11 @@ export function App() {
   }, [refreshStatus]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden text-[var(--ink)]">
       <Sidebar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 bg-transparent">
         <TopBar envStatus={envStatus} onRefresh={refreshStatus} refreshing={refreshing} />
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden flex flex-col bg-transparent">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/versions" element={<Versions />} />

@@ -1,5 +1,7 @@
 /* ─── Data ────────────────────────────────────────────────────────────────── */
 
+import Image from "next/image";
+
 const NAV = [
   { label: "Features", href: "#features" },
   { label: "CLI", href: "#cli" },
@@ -117,7 +119,16 @@ export default function Home() {
           {/* Nav */}
           <header className="flex items-center justify-between gap-4 py-5">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--brand)] text-sm font-bold text-white">J</span>
+              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-1 ring-white/10">
+                <Image
+                  src="/app-logo.png"
+                  alt="JDK Manager"
+                  width={32}
+                  height={32}
+                  className="h-full w-full object-cover"
+                  priority
+                />
+              </span>
               <span className="text-sm font-semibold tracking-wide text-white/90">JDK Manager</span>
             </div>
             <nav className="hidden items-center gap-6 md:flex">

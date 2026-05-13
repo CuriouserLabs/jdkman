@@ -49,6 +49,7 @@ export interface EnvStatus {
   current_alias: string | null;
   java_in_path: string | null;
   java_version_output: string | null;
+  is_elevated: boolean;
 }
 
 export interface Toast {

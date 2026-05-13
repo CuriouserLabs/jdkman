@@ -3,25 +3,67 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --page-bg: #f3efe6;
+    --page-bg-2: #e8e3d8;
+    --paper: rgba(248, 245, 239, 0.88);
+    --paper-strong: #fffdf8;
+    --ink: #18202b;
+    --ink-soft: #2d3542;
+    --muted: #6d7481;
+    --muted-soft: #8e938d;
+    --brand: #0d7a68;
+    --brand-deep: #095e50;
+    --brand-soft: #7ce8d0;
+    --accent: #e87830;
+    --accent-hot: #ff6a10;
+    --accent-glow: rgba(232, 120, 48, 0.18);
+    --panel-border: rgba(22, 32, 43, 0.08);
+    --shadow-sm: 0 10px 30px rgba(19, 24, 33, 0.06);
+    --shadow-md: 0 24px 60px rgba(19, 24, 33, 0.1);
+    --shell-dark: #0f172a;
+    --shell-dark-2: #132033;
+  }
+
+  .dark {
+    --page-bg: #0d1523;
+    --page-bg-2: #111d30;
+    --paper: rgba(18, 28, 43, 0.9);
+    --paper-strong: #162133;
+    --ink: #eef2ea;
+    --ink-soft: #d7ddd7;
+    --muted: #93a0b3;
+    --muted-soft: #768294;
+    --panel-border: rgba(124, 232, 208, 0.1);
+    --shadow-sm: 0 12px 30px rgba(2, 8, 18, 0.26);
+    --shadow-md: 0 28px 80px rgba(2, 8, 18, 0.4);
+    --shell-dark: #09111d;
+    --shell-dark-2: #0e1828;
+  }
+
   html {
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: "Space Grotesk", "Aptos", "Segoe UI", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
   body {
-    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at top right, rgba(232, 120, 48, 0.08), transparent 28rem),
+      radial-gradient(circle at top left, rgba(13, 122, 104, 0.08), transparent 24rem),
+      linear-gradient(180deg, var(--page-bg) 0%, var(--page-bg-2) 100%);
     overflow: hidden;
     user-select: none;
   }
 
   code, pre, .font-mono {
-    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", ui-monospace, monospace;
+    font-family: "IBM Plex Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
   }
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-600; border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400 dark:bg-slate-500; }
+  ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--brand) 32%, transparent); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--brand) 46%, transparent); }
 }
 
 @layer utilities {
@@ -37,4 +79,22 @@
   .slide-in-from-right { animation-name: slide-in-from-right; }
   .fade-in { animation-name: fade-in; }
   .duration-200 { animation-duration: 200ms; }
+
+  .app-paper {
+    background: var(--paper);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(14px);
+  }
+
+  .app-paper-strong {
+    background: var(--paper-strong);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .app-shell-dark {
+    background:
+      linear-gradient(180deg, var(--shell-dark) 0%, var(--shell-dark-2) 100%);
+  }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, FileJson, FolderOpen, Info, Settings as SettingsIcon } from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
-import { addJdk, getConfigDir, getConfigPath, importJavaHome } from "../lib/api";
+import { addJdk, getConfigDir, getConfigPath, getEnvStatus, importJavaHome } from "../lib/api";
 import { Card, CardHeader } from "../components/Card";
 import { Button } from "../components/Button";
 import { useToast } from "../context/ToastContext";
@@ -9,6 +9,7 @@ import { useToast } from "../context/ToastContext";
 export function Settings() {
   const [configPath, setConfigPath] = useState("");
   const [configDir, setConfigDir] = useState("");
+  const [isElevated, setIsElevated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const { showToast } = useToast();
@@ -17,9 +18,10 @@ export function Settings() {
     const load = async () => {
       setLoading(true);
       try {
-        const [cp, cd] = await Promise.all([getConfigPath(), getConfigDir()]);
+        const [cp, cd, envStatus] = await Promise.all([getConfigPath(), getConfigDir(), getEnvStatus()]);
         setConfigPath(cp);
         setConfigDir(cd);
+        setIsElevated(envStatus.is_elevated);
       } catch (e) { showToast("error", String(e)); }
       finally { setLoading(false); }
     };
@@ -48,6 +50,20 @@ export function Settings() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Configuration and app information</p>
       </div>
+
+      {!loading && !isElevated && (
+        <Card className="border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Administrator mode is off</p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                JDK Manager can still update your user environment, but system-wide HKLM JAVA_HOME and PATH changes require reopening the app as Administrator.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

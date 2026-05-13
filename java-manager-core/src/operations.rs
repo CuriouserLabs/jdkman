@@ -120,6 +120,7 @@ pub fn env_status() -> Result<EnvStatus> {
         current_alias: config.current,
         java_in_path,
         java_version_output,
+        is_elevated: crate::env::is_elevated(),
     })
 }
 

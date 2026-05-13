@@ -17,7 +17,7 @@
         "height": 700,
         "minWidth": 900,
         "minHeight": 580,
-        "resizable": true,
+        "resizable": false,
         "fullscreen": false,
         "center": true
       }
@@ -33,6 +33,7 @@
       "resources/jdkman.exe"
     ],
     "icon": [
+      "icons/icon.png",
       "icons/icon.ico"
     ],
     "windows": {

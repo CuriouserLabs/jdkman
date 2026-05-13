@@ -15,6 +15,16 @@ fn main() {
     #[cfg(windows)]
     colored::control::set_virtual_terminal(true).ok();
 
+    #[cfg(windows)]
+    if !java_manager_core::env::is_elevated() {
+        println!(
+            "{} Not running as Administrator — system-wide (HKLM) JAVA_HOME/PATH updates will be skipped.",
+            "⚠".yellow().bold()
+        );
+        println!("  User environment (HKCU) updates will still work.");
+        println!();
+    }
+
     let cli = Cli::parse();
     if let Err(e) = run(cli) {
         eprintln!("{} {}", "Error:".red().bold(), e);

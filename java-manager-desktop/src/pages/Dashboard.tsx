@@ -67,6 +67,20 @@ export function Dashboard() {
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Current Java environment overview</p>
       </div>
 
+      {status && !status.is_elevated && (
+        <Card className="border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
+          <div className="flex items-start gap-3">
+            <TriangleAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">App is not running as Administrator</p>
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                User environment updates will still work, but system-wide HKLM JAVA_HOME and PATH updates will be skipped until you reopen the app as Administrator.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Status hero */}
       <Card className="border-l-4" style={{ borderLeftColor: borderColor }}>
         <div className="flex items-start justify-between gap-4">

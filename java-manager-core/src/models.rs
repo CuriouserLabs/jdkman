@@ -79,4 +79,5 @@ pub struct EnvStatus {
     pub current_alias: Option<String>,
     pub java_in_path: Option<String>,
     pub java_version_output: Option<String>,
+    pub is_elevated: bool,
 }

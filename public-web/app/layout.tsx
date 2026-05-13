@@ -43,6 +43,9 @@ export const metadata: Metadata = {
     description:
       "Stop fighting JAVA_HOME and PATH. Discover, switch, and validate JDK installations on Windows.",
   },
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
