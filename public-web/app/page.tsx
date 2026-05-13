@@ -158,7 +158,7 @@ export default function Home() {
                 <code className="inline-code-light">PATH</code> under control. CLI + desktop app. Built in Rust.
               </p>
               <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <a href="#download" className="btn btn-primary">Download Preview</a>
+                <a href="/JDK%20Manager_0.1.0_x64_en-US.msi" download className="btn btn-primary">Download Preview</a>
                 <a href="#cli" className="btn btn-ghost">See the CLI →</a>
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function Home() {
             Download the CLI, try the desktop app, or browse the source on GitHub. Free and open source.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href="#" className="btn btn-primary">Download for Windows</a>
+            <a href="/JDK%20Manager_0.1.0_x64_en-US.msi" download className="btn btn-primary">Download for Windows</a>
             <a href="#" className="btn btn-ghost">View on GitHub</a>
             <a href="#" className="btn btn-ghost">Read the Docs</a>
           </div>
