@@ -383,7 +383,7 @@ export default function Home() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a href="/JDK%20Manager_0.1.0_x64_en-US.msi" download className="btn btn-primary">Download for Windows</a>
-            <a href="#" className="btn btn-ghost">View on GitHub</a>
+            <a href="https://github.com/PrabathMadushan/jdkman" target="_blank" rel="noopener noreferrer" className="btn btn-ghost">View on GitHub</a>
             <a href="#" className="btn btn-ghost">Read the Docs</a>
           </div>
         </div>
@@ -398,7 +398,7 @@ export default function Home() {
           </div>
           <p>Windows-first Java version management. Built with Rust.</p>
           <div className="flex gap-4">
-            <a href="#" className="transition-colors hover:text-[var(--ink)]">GitHub</a>
+            <a href="https://github.com/PrabathMadushan/jdkman" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--ink)]">GitHub</a>
             <a href="#" className="transition-colors hover:text-[var(--ink)]">Docs</a>
             <a href="#" className="transition-colors hover:text-[var(--ink)]">Releases</a>
           </div>
