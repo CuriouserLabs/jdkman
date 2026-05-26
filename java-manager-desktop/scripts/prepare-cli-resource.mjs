@@ -15,7 +15,7 @@ const sourceCliPath = path.join(
   targetDir,
   process.platform === "win32" ? "jdkman.exe" : "jdkman",
 );
-const resourceDir = path.join(desktopRoot, "src-tauri", "resources");
+const resourceDir = path.join(workspaceRoot, "target", "tauri-resources");
 const resourceCliPath = path.join(
   resourceDir,
   process.platform === "win32" ? "jdkman.exe" : "jdkman",
