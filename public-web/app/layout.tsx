@@ -16,13 +16,13 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "JDK Manager — Java Version Management for Windows",
+  title: "JDK Manager - Cross-Platform Java Version Management",
   description:
-    "Stop fighting JAVA_HOME and PATH. JDK Manager is a Windows-first tool with a Rust CLI and Tauri desktop app that discovers, switches, and validates your JDK installations.",
+    "Stop fighting JAVA_HOME and PATH. JDK Manager is a cross-platform tool with a Rust CLI and Tauri desktop app for discovering, switching, and validating JDK installations on Windows, macOS, and Linux.",
   keywords: [
     "JDK Manager",
     "Java version manager",
-    "Windows JDK",
+    "cross-platform JDK manager",
     "JAVA_HOME",
     "Java PATH",
     "jdkman CLI",
@@ -31,17 +31,17 @@ export const metadata: Metadata = {
     "JDK scanner",
   ],
   openGraph: {
-    title: "JDK Manager — Java Version Management for Windows",
+    title: "JDK Manager - Cross-Platform Java Version Management",
     description:
-      "A Windows-first tool with a Rust CLI and Tauri desktop app that discovers, switches, and validates your JDK installations.",
+      "A Rust CLI and Tauri desktop app that discovers, switches, and validates JDK installations on Windows, macOS, and Linux.",
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "JDK Manager — Java Version Management for Windows",
+    title: "JDK Manager - Cross-Platform Java Version Management",
     description:
-      "Stop fighting JAVA_HOME and PATH. Discover, switch, and validate JDK installations on Windows.",
+      "Stop fighting JAVA_HOME and PATH. Discover, switch, and validate JDK installations across Windows, macOS, and Linux.",
   },
   icons: {
     icon: "/icon.png",
@@ -54,10 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} scroll-smooth`}
-    >
+    <html lang="en" className={`${spaceGrotesk.variable} ${ibmPlexMono.variable} scroll-smooth`}>
       <body className="min-h-screen">{children}</body>
     </html>
   );

@@ -1,0 +1,117 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04
+          - platform: windows-latest
+          - platform: macos-latest
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux desktop dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: java-manager-desktop/package-lock.json
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            . -> target
+            ./java-manager-desktop/src-tauri -> target
+
+      - name: Install desktop dependencies
+        working-directory: java-manager-desktop
+        run: npm ci
+
+      - name: Build and publish Tauri bundles
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: java-manager-desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: "JDK Manager ${{ github.ref_name }}"
+          releaseBody: "Automated release for ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false
+
+  publish-cli:
+    needs: publish-tauri
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact_name: jdkman-linux-x64
+            binary_path: target/release/jdkman
+            asset_name: jdkman-linux-x64
+          - os: windows-latest
+            artifact_name: jdkman-windows-x64
+            binary_path: target/release/jdkman.exe
+            asset_name: jdkman-windows-x64.exe
+          - os: macos-latest
+            artifact_name: jdkman-macos
+            binary_path: target/release/jdkman
+            asset_name: jdkman-macos
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: . -> target
+
+      - name: Build CLI
+        run: cargo build -p java-manager-cli --release
+
+      - name: Upload CLI asset to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: gh release upload "${{ github.ref_name }}" "${{ matrix.binary_path }}#${{ matrix.asset_name }}" --clobber
+
+  finalize-release:
+    needs:
+      - publish-tauri
+      - publish-cli
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Publish draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "${{ github.ref_name }}" --draft=false

@@ -475,9 +475,49 @@ pre {
   pointer-events: none;
 }
 
+.download-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.download-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1.35rem;
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.download-os {
+  margin: 0;
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.download-formats {
+  margin: 0.35rem 0 0;
+  color: var(--brand-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.download-copy {
+  margin: 0.9rem 0 1.2rem;
+  color: rgba(248, 245, 239, 0.58);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
 @media (min-width: 768px) {
   .cta-panel {
     padding: 3.5rem 3rem;
+  }
+
+  .download-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
