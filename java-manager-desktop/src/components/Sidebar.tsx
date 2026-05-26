@@ -56,7 +56,7 @@ export function Sidebar() {
       </nav>
 
       <div className="relative px-5 py-4 border-t border-white/8">
-        <p className="text-[0.72rem] uppercase tracking-[0.18em] text-white/35">Windows-first Java version manager</p>
+        <p className="text-[0.72rem] uppercase tracking-[0.18em] text-white/35">Cross-platform Java version manager</p>
       </div>
     </aside>
   );

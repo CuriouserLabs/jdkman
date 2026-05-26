@@ -71,9 +71,18 @@ pub struct VerifyResult {
     pub path_valid: bool,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UseResult {
+    pub platform: String,
+    pub warning: Option<String>,
+    pub requires_terminal_restart: bool,
+    pub requires_shell_eval: bool,
+}
+
 /// Current environment status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnvStatus {
+    pub platform: String,
     pub java_home: Option<String>,
     pub java_home_valid: bool,
     pub current_alias: Option<String>,

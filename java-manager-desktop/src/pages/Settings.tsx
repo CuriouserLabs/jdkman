@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, FileJson, FolderOpen, Info, Settings as SettingsIcon } from "lucide-react";
+import {
+  ExternalLink,
+  FileJson,
+  FolderOpen,
+  Info,
+  Settings as SettingsIcon,
+} from "lucide-react";
 import { open } from "@tauri-apps/plugin-shell";
 import { addJdk, getConfigDir, getConfigPath, getEnvStatus, importJavaHome } from "../lib/api";
 import { Card, CardHeader } from "../components/Card";
@@ -10,6 +16,7 @@ export function Settings() {
   const [configPath, setConfigPath] = useState("");
   const [configDir, setConfigDir] = useState("");
   const [isElevated, setIsElevated] = useState(false);
+  const [platform, setPlatform] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const { showToast } = useToast();
@@ -18,40 +25,60 @@ export function Settings() {
     const load = async () => {
       setLoading(true);
       try {
-        const [cp, cd, envStatus] = await Promise.all([getConfigPath(), getConfigDir(), getEnvStatus()]);
+        const [cp, cd, envStatus] = await Promise.all([
+          getConfigPath(),
+          getConfigDir(),
+          getEnvStatus(),
+        ]);
         setConfigPath(cp);
         setConfigDir(cd);
         setIsElevated(envStatus.is_elevated);
-      } catch (e) { showToast("error", String(e)); }
-      finally { setLoading(false); }
+        setPlatform(envStatus.platform);
+      } catch (e) {
+        showToast("error", String(e));
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, []);
 
   const openPath = async (path: string) => {
-    try { await open(path); } catch { showToast("error", "Could not open path"); }
+    try {
+      await open(path);
+    } catch {
+      showToast("error", "Could not open path");
+    }
   };
 
   const handleImportJavaHome = async () => {
     setImporting(true);
     try {
       const result = await importJavaHome();
-      if (!result) { showToast("info", "No valid JAVA_HOME found in the current environment."); return; }
+      if (!result) {
+        showToast("info", "No valid JAVA_HOME found in the current environment.");
+        return;
+      }
       const [alias, path] = result;
       await addJdk(alias, path);
       showToast("success", `Imported JAVA_HOME as '${alias}' (${path})`);
-    } catch (e) { showToast("error", String(e)); }
-    finally { setImporting(false); }
+    } catch (e) {
+      showToast("error", String(e));
+    } finally {
+      setImporting(false);
+    }
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Configuration and app information</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          Configuration and app information
+        </p>
       </div>
 
-      {!loading && !isElevated && (
+      {!loading && platform === "Windows" && !isElevated && (
         <Card className="border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
@@ -112,7 +139,7 @@ export function Settings() {
         <div>
           <p className="text-sm text-slate-700 dark:text-slate-300 mb-1">Import existing JAVA_HOME</p>
           <p className="text-xs text-slate-500 mb-3">
-            If JAVA_HOME is already set in your user environment, import it as a managed alias.
+            If JAVA_HOME is already set in your current environment, import it as a managed alias.
           </p>
           <Button variant="secondary" size="sm" onClick={handleImportJavaHome} loading={importing}>
             Import JAVA_HOME
@@ -134,7 +161,7 @@ export function Settings() {
           </div>
           <div className="flex justify-between">
             <span>Platform</span>
-            <span className="font-mono text-slate-800 dark:text-slate-200">Windows</span>
+            <span className="font-mono text-slate-800 dark:text-slate-200">{platform || "Unknown"}</span>
           </div>
           <div className="flex justify-between">
             <span>Built with</span>
@@ -150,24 +177,45 @@ export function Settings() {
             <h2 className="font-semibold text-slate-800 dark:text-slate-200">How it works</h2>
           </div>
         </CardHeader>
-        <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
-          <li className="flex items-start gap-2">
-            <span className="text-brand-500 font-bold mt-0.5">1.</span>
-            Changes are written to your <strong>user environment</strong> (HKCU\Environment), not system-wide.
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-brand-500 font-bold mt-0.5">2.</span>
-            A <code>WM_SETTINGCHANGE</code> broadcast notifies new processes immediately.
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-brand-500 font-bold mt-0.5">3.</span>
-            Already-open terminals won't reflect the change — open a new one.
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-brand-500 font-bold mt-0.5">4.</span>
-            Use <code>jdkman export-shell &lt;alias&gt;</code> to apply inline in the current terminal.
-          </li>
-        </ul>
+        {platform === "Windows" ? (
+          <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">1.</span>
+              Changes are written to your <strong>user environment</strong> (HKCU\Environment), not system-wide.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">2.</span>
+              A <code>WM_SETTINGCHANGE</code> broadcast notifies new processes immediately.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">3.</span>
+              Already-open terminals will not reflect the change. Open a new one.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">4.</span>
+              Use <code>jdkman export-shell &lt;alias&gt;</code> to apply inline in the current terminal.
+            </li>
+          </ul>
+        ) : (
+          <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">1.</span>
+              Selecting a version updates JDK Manager config and marks the active alias.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">2.</span>
+              Your current shell is unchanged until you run <code>jdkman export-shell &lt;alias&gt;</code>.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">3.</span>
+              Evaluate the exported commands in <code>bash</code>, <code>zsh</code>, or <code>fish</code> to switch immediately.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 font-bold mt-0.5">4.</span>
+              JDK Manager does not edit shell startup files automatically in this version.
+            </li>
+          </ul>
+        )}
       </Card>
     </div>
   );

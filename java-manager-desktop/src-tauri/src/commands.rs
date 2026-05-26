@@ -3,8 +3,7 @@ use java_manager_core::{
     doctor,
     java::{create_jdk_entry, make_unique_alias},
     models::{DiagnosticResult, DiscoveredJdk, EnvStatus, JavaVersion, ScanResult, VerifyResult},
-    operations,
-    scan,
+    operations, scan,
 };
 use std::collections::HashSet;
 use tauri::command;
@@ -26,10 +25,8 @@ pub fn remove_jdk(alias: String) -> Result<(), String> {
     operations::remove_jdk(&alias).map_err(|e| e.to_string())
 }
 
-/// Returns `Ok(Some(warning))` if the user env was updated but system env (HKLM) failed
-/// (likely needs admin), or `Ok(None)` on full success.
 #[command]
-pub fn use_jdk(alias: String) -> Result<Option<String>, String> {
+pub fn use_jdk(alias: String) -> Result<java_manager_core::models::UseResult, String> {
     operations::use_jdk(&alias).map_err(|e| e.to_string())
 }
 

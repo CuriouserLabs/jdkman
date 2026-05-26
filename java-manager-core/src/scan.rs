@@ -2,26 +2,9 @@ use crate::config::load_config;
 use crate::env::registry_jdk_homes;
 use crate::java::{detect_version, normalize_path, suggest_alias, validate_jdk_path};
 use crate::models::{DiscoveredJdk, ScanResult};
+use crate::platform;
 use std::collections::HashSet;
-use std::path::Path;
-
-/// Common Windows install locations to probe.
-const COMMON_ROOTS: &[&str] = &[
-    r"C:\Program Files\Microsoft",
-    r"C:\Program Files\Java",
-    r"C:\Program Files\Eclipse Adoptium",
-    r"C:\Program Files\Eclipse Foundation",
-    r"C:\Program Files\Zulu",
-    r"C:\Program Files\Amazon Corretto",
-    r"C:\Program Files\BellSoft",
-    r"C:\Program Files\RedHat",
-    r"C:\Program Files\Semeru",
-    r"C:\Program Files\IBM",
-    r"C:\Program Files (x86)\Java",
-    r"C:\Program Files (x86)\Zulu",
-    r"C:\Program Files\GraalVM",
-    r"C:\Program Files\SapMachine",
-];
+use std::path::{Path, PathBuf};
 
 pub fn scan_for_jdks() -> ScanResult {
     let config = load_config().unwrap_or_default();
@@ -37,7 +20,7 @@ pub fn scan_for_jdks() -> ScanResult {
     // Collect candidate paths from multiple sources
     let mut candidates: Vec<String> = Vec::new();
 
-    // 1. Windows registry
+    // 1. Platform-native discovery
     candidates.extend(registry_jdk_homes());
 
     // 2. JAVA_HOME env var (may differ from registry if set manually)
@@ -48,20 +31,12 @@ pub fn scan_for_jdks() -> ScanResult {
     }
 
     // 3. File-system scan of common roots
-    for root in COMMON_ROOTS {
-        let root_path = Path::new(root);
+    for root_path in platform::common_scan_roots() {
         if !root_path.exists() {
             continue;
         }
-        // Maybe the root itself is a JDK
-        candidates.push(root.to_string());
-        // Probe immediate subdirectories
-        if let Ok(entries) = std::fs::read_dir(root_path) {
-            for entry in entries.flatten() {
-                if entry.path().is_dir() {
-                    candidates.push(entry.path().to_string_lossy().to_string());
-                }
-            }
+        for candidate in expand_root_candidates(&root_path) {
+            candidates.push(candidate.to_string_lossy().to_string());
         }
     }
 
@@ -97,6 +72,30 @@ pub fn scan_for_jdks() -> ScanResult {
     });
 
     ScanResult { found }
+}
+
+fn expand_root_candidates(root: &Path) -> Vec<PathBuf> {
+    let mut candidates = vec![root.to_path_buf()];
+
+    if let Ok(entries) = std::fs::read_dir(root) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !path.is_dir() {
+                continue;
+            }
+            candidates.push(path.clone());
+
+            #[cfg(target_os = "macos")]
+            {
+                let contents_home = path.join("Contents").join("Home");
+                if contents_home.is_dir() {
+                    candidates.push(contents_home);
+                }
+            }
+        }
+    }
+
+    candidates
 }
 
 #[cfg(test)]

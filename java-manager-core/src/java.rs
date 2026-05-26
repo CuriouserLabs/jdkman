@@ -1,9 +1,10 @@
 use crate::errors::{JdkManagerError, Result};
 use crate::models::JdkEntry;
+use crate::platform;
 use crate::process::command;
 use std::path::Path;
 
-/// Returns Ok if the path contains a valid JDK (has bin/java.exe and bin/javac.exe).
+/// Returns Ok if the path contains a valid JDK for the current OS.
 pub fn validate_jdk_path(path: &str) -> Result<()> {
     let base = Path::new(path);
     if !base.exists() {
@@ -16,16 +17,20 @@ pub fn validate_jdk_path(path: &str) -> Result<()> {
             "Path is not a directory: {path}"
         )));
     }
-    let java_exe = base.join("bin").join("java.exe");
-    if !java_exe.exists() {
+    let java_bin = platform::java_binary_path(path);
+    if !java_bin.exists() {
         return Err(JdkManagerError::InvalidJdkPath(format!(
-            "bin\\java.exe not found in: {path}"
+            "{}/{} not found in: {path}",
+            "bin",
+            platform::java_binary_name()
         )));
     }
-    let javac_exe = base.join("bin").join("javac.exe");
-    if !javac_exe.exists() {
+    let javac_bin = platform::javac_binary_path(path);
+    if !javac_bin.exists() {
         return Err(JdkManagerError::InvalidJdkPath(format!(
-            "bin\\javac.exe not found in: {path} (this looks like a JRE, not a full JDK)"
+            "{}/{} not found in: {path} (this looks like a JRE, not a full JDK)",
+            "bin",
+            platform::javac_binary_name()
         )));
     }
     Ok(())
@@ -41,17 +46,9 @@ pub fn detect_version(path: &str) -> Option<(String, String)> {
         let mut vendor: Option<String> = None;
         for line in content.lines() {
             if line.starts_with("JAVA_VERSION=") {
-                version = Some(
-                    line["JAVA_VERSION=".len()..]
-                        .trim_matches('"')
-                        .to_string(),
-                );
+                version = Some(line["JAVA_VERSION=".len()..].trim_matches('"').to_string());
             } else if line.starts_with("IMPLEMENTOR=") {
-                vendor = Some(
-                    line["IMPLEMENTOR=".len()..]
-                        .trim_matches('"')
-                        .to_string(),
-                );
+                vendor = Some(line["IMPLEMENTOR=".len()..].trim_matches('"').to_string());
             }
         }
         if let Some(v) = version {
@@ -60,11 +57,11 @@ pub fn detect_version(path: &str) -> Option<(String, String)> {
     }
 
     // Fallback: run java -version
-    let java_exe = Path::new(path).join("bin").join("java.exe");
-    if !java_exe.exists() {
+    let java_bin = platform::java_binary_path(path);
+    if !java_bin.exists() {
         return None;
     }
-    let output = command(&java_exe).arg("-version").output().ok()?;
+    let output = command(&java_bin).arg("-version").output().ok()?;
     // java -version writes to stderr
     let stderr = String::from_utf8_lossy(&output.stderr);
     parse_java_version_output(&stderr)
@@ -91,9 +88,9 @@ fn parse_java_version_output(output: &str) -> Option<(String, String)> {
     None
 }
 
-/// Run java -version for a specific java.exe and return the output string.
-pub fn run_java_version(java_exe: &str) -> Option<String> {
-    let output = command(java_exe).arg("-version").output().ok()?;
+/// Run java -version for a specific java binary and return the output string.
+pub fn run_java_version(java_bin: &str) -> Option<String> {
+    let output = command(java_bin).arg("-version").output().ok()?;
     let stderr = String::from_utf8_lossy(&output.stderr);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let combined = format!("{stderr}{stdout}");
@@ -117,10 +114,9 @@ pub fn create_jdk_entry(path: &str) -> JdkEntry {
     }
 }
 
-/// Normalize a Windows path: trim trailing slashes, etc.
+/// Normalize a JDK path by trimming trailing separators.
 pub fn normalize_path(path: &str) -> String {
-    path.trim_end_matches(['\\', '/'])
-        .to_string()
+    path.trim_end_matches(['\\', '/']).to_string()
 }
 
 /// Suggest an alias like "java17" or "java21" based on version or path heuristics.
@@ -136,7 +132,9 @@ pub fn suggest_alias(path: &str, version: Option<&str>) -> String {
     }
     // Guess from path components
     let path_lower = path.to_lowercase();
-    for ver in ["24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "8"] {
+    for ver in [
+        "24", "23", "22", "21", "20", "19", "18", "17", "16", "15", "14", "13", "12", "11", "8",
+    ] {
         let patterns = [
             format!("-{ver}."),
             format!("-{ver}\\"),
@@ -187,7 +185,10 @@ mod tests {
             "java21"
         );
         assert_eq!(
-            suggest_alias(r"C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot", None),
+            suggest_alias(
+                r"C:\Program Files\Eclipse Adoptium\jdk-17.0.9.9-hotspot",
+                None
+            ),
             "java17"
         );
     }
@@ -210,6 +211,7 @@ mod tests {
     fn normalize_path_trims_slashes() {
         assert_eq!(normalize_path(r"C:\foo\bar\"), r"C:\foo\bar");
         assert_eq!(normalize_path(r"C:\foo\bar"), r"C:\foo\bar");
+        assert_eq!(normalize_path("/opt/jdk-21/"), "/opt/jdk-21");
     }
 
     #[test]

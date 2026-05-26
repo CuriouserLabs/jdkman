@@ -5,6 +5,7 @@ import type {
   EnvStatus,
   JavaVersion,
   ScanResult,
+  UseResult,
   VerifyResult,
 } from "./types";
 
@@ -17,8 +18,7 @@ export const addJdk = (alias: string, path: string): Promise<void> =>
 export const removeJdk = (alias: string): Promise<void> =>
   invoke("remove_jdk", { alias });
 
-/** Returns a warning string if system env (HKLM) could not be updated (needs admin), or null on full success. */
-export const useJdk = (alias: string): Promise<string | null> =>
+export const useJdk = (alias: string): Promise<UseResult> =>
   invoke("use_jdk", { alias });
 
 export const verifyJdk = (alias: string): Promise<VerifyResult> =>

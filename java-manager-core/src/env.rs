@@ -55,8 +55,14 @@ mod platform {
             .flat_map(|c| c.to_le_bytes())
             .collect();
 
-        key.set_raw_value("Path", &RegValue { bytes: wide_bytes, vtype })
-            .map_err(|e| JdkManagerError::Registry(format!("Cannot write Path: {e}")))?;
+        key.set_raw_value(
+            "Path",
+            &RegValue {
+                bytes: wide_bytes,
+                vtype,
+            },
+        )
+        .map_err(|e| JdkManagerError::Registry(format!("Cannot write Path: {e}")))?;
         Ok(())
     }
 
@@ -88,8 +94,7 @@ mod platform {
         Ok(())
     }
 
-    const SYSTEM_ENV_PATH: &str =
-        r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
+    const SYSTEM_ENV_PATH: &str = r"SYSTEM\CurrentControlSet\Control\Session Manager\Environment";
 
     fn system_env_key(write: bool) -> Result<RegKey> {
         let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
@@ -108,8 +113,9 @@ mod platform {
 
     pub fn set_system_java_home(path: &str) -> Result<()> {
         let key = system_env_key(true)?;
-        key.set_value("JAVA_HOME", &path.to_string())
-            .map_err(|e| JdkManagerError::Registry(format!("Cannot write system JAVA_HOME: {e}")))?;
+        key.set_value("JAVA_HOME", &path.to_string()).map_err(|e| {
+            JdkManagerError::Registry(format!("Cannot write system JAVA_HOME: {e}"))
+        })?;
         Ok(())
     }
 
@@ -136,8 +142,14 @@ mod platform {
             .flat_map(|c| c.to_le_bytes())
             .collect();
 
-        key.set_raw_value("Path", &RegValue { bytes: wide_bytes, vtype })
-            .map_err(|e| JdkManagerError::Registry(format!("Cannot write system Path: {e}")))?;
+        key.set_raw_value(
+            "Path",
+            &RegValue {
+                bytes: wide_bytes,
+                vtype,
+            },
+        )
+        .map_err(|e| JdkManagerError::Registry(format!("Cannot write system Path: {e}")))?;
         Ok(())
     }
 
@@ -236,7 +248,10 @@ mod platform {
         let mut homes = Vec::new();
         let search_roots = [
             (HKEY_LOCAL_MACHINE, r"SOFTWARE\JavaSoft\JDK"),
-            (HKEY_LOCAL_MACHINE, r"SOFTWARE\JavaSoft\Java Development Kit"),
+            (
+                HKEY_LOCAL_MACHINE,
+                r"SOFTWARE\JavaSoft\Java Development Kit",
+            ),
             (HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\JavaSoft\JDK"),
             (
                 HKEY_LOCAL_MACHINE,

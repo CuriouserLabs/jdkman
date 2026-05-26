@@ -61,12 +61,12 @@ export function Scan() {
 
       <Card>
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="font-medium text-slate-800 dark:text-slate-200 mb-1">Auto-discover JDK installations</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Searches Program Files, Eclipse Adoptium, Zulu, Amazon Corretto, and the Windows registry.
-            </p>
-          </div>
+        <div>
+          <p className="font-medium text-slate-800 dark:text-slate-200 mb-1">Auto-discover JDK installations</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+              Searches common install locations for your platform, plus JAVA_HOME when it is already set.
+          </p>
+        </div>
           <Button variant="primary" size="md" onClick={handleScan} loading={scanning} className="flex-shrink-0">
             <ScanSearch className="w-4 h-4" />
             {scanning ? "Scanning…" : "Scan Now"}

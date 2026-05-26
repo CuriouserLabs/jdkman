@@ -82,13 +82,6 @@ pub fn set_current(alias: &str) -> Result<Config> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
-
-    fn with_temp_config<F: FnOnce()>(f: F) {
-        // We can't easily override the config path in tests without refactoring,
-        // so we test the serialization round-trip directly.
-        f();
-    }
 
     #[test]
     fn config_default_is_empty() {
@@ -117,8 +110,8 @@ mod tests {
 
     #[test]
     fn corrupt_json_returns_default() {
-        let result: Result<Config> = serde_json::from_str::<Config>("NOT_JSON")
-            .or_else(|_| Ok(Config::default()));
+        let result: Result<Config> =
+            serde_json::from_str::<Config>("NOT_JSON").or_else(|_| Ok(Config::default()));
         assert!(result.is_ok());
         assert!(result.unwrap().versions.is_empty());
     }

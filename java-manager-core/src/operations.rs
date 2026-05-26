@@ -1,14 +1,12 @@
-use crate::config::{
-    add_version, load_config, remove_version, set_current, update_version,
-};
+use crate::config::{add_version, load_config, remove_version, set_current, update_version};
 use crate::env::{apply_java_version, get_java_home, ApplyResult};
 use crate::errors::{JdkManagerError, Result};
 use crate::java::{
     create_jdk_entry, detect_version, normalize_path, run_java_version, suggest_alias,
     validate_jdk_path,
 };
-use crate::models::{EnvStatus, JavaVersion, VerifyResult};
-use crate::process::command;
+use crate::models::{EnvStatus, JavaVersion, UseResult, VerifyResult};
+use crate::platform;
 
 /// Return all configured Java versions, sorted by alias.
 pub fn list_versions() -> Result<Vec<JavaVersion>> {
@@ -44,10 +42,10 @@ pub fn remove_jdk(alias: &str) -> Result<()> {
     Ok(())
 }
 
-/// Switch the active Java version: updates JAVA_HOME and PATH in both user and system
-/// environments, then updates config. Returns an optional warning if the system-level
-/// (HKLM) update failed — typically because the app is not running as administrator.
-pub fn use_jdk(alias: &str) -> Result<Option<String>> {
+/// Switch the active Java version.
+/// Windows persists environment changes immediately.
+/// macOS/Linux store the selected alias and rely on export-shell for activation.
+pub fn use_jdk(alias: &str) -> Result<UseResult> {
     let config = load_config()?;
     let entry = config
         .versions
@@ -56,22 +54,47 @@ pub fn use_jdk(alias: &str) -> Result<Option<String>> {
 
     validate_jdk_path(&entry.path)?;
 
-    let managed_bins: Vec<String> = config
-        .versions
-        .values()
-        .map(|v| format!("{}\\bin", normalize_path(&v.path)))
-        .collect();
+    #[cfg(not(windows))]
+    {
+        set_current(alias)?;
+        return Ok(UseResult {
+            platform: platform::platform_label().to_string(),
+            warning: None,
+            requires_terminal_restart: false,
+            requires_shell_eval: true,
+        });
+    }
 
-    let ApplyResult { system_updated: _, system_error } =
-        apply_java_version(&entry.path, &managed_bins)?;
-    set_current(alias)?;
+    #[cfg(windows)]
+    {
+        let managed_bins: Vec<String> = config
+            .versions
+            .values()
+            .map(|v| {
+                platform::jdk_bin_dir(&normalize_path(&v.path))
+                    .to_string_lossy()
+                    .to_string()
+            })
+            .collect();
 
-    let warning = system_error.map(|_| {
-        "System environment (HKLM) could not be updated — run as Administrator to apply \
+        let ApplyResult {
+            system_updated: _,
+            system_error,
+        } = apply_java_version(&entry.path, &managed_bins)?;
+        set_current(alias)?;
+
+        let warning = system_error.map(|_| {
+            "System environment (HKLM) could not be updated — run as Administrator to apply \
          changes system-wide. User environment was updated successfully."
-            .to_string()
-    });
-    Ok(warning)
+                .to_string()
+        });
+        Ok(UseResult {
+            platform: platform::platform_label().to_string(),
+            warning,
+            requires_terminal_restart: true,
+            requires_shell_eval: false,
+        })
+    }
 }
 
 /// Return the currently selected alias (from config).
@@ -88,11 +111,15 @@ pub fn verify_jdk(alias: &str) -> Result<VerifyResult> {
         .ok_or_else(|| JdkManagerError::AliasNotFound(alias.to_string()))?;
 
     let path_valid = validate_jdk_path(&entry.path).is_ok();
-    let java_exe = format!("{}\\bin\\java.exe", normalize_path(&entry.path));
-    let javac_exe = format!("{}\\bin\\javac.exe", normalize_path(&entry.path));
+    let java_bin = platform::java_binary_path(&normalize_path(&entry.path))
+        .to_string_lossy()
+        .to_string();
+    let javac_bin = platform::javac_binary_path(&normalize_path(&entry.path))
+        .to_string_lossy()
+        .to_string();
 
-    let java_version_output = run_java_version(&java_exe);
-    let javac_version_output = run_java_version(&javac_exe);
+    let java_version_output = run_java_version(&java_bin);
+    let javac_version_output = run_java_version(&javac_bin);
 
     Ok(VerifyResult {
         alias: alias.to_string(),
@@ -115,6 +142,7 @@ pub fn env_status() -> Result<EnvStatus> {
     let java_version_output = java_in_path.as_deref().and_then(run_java_version);
 
     Ok(EnvStatus {
+        platform: platform::platform_label().to_string(),
         java_home,
         java_home_valid,
         current_alias: config.current,
@@ -151,14 +179,5 @@ pub fn refresh_jdk_metadata(alias: &str) -> Result<()> {
 }
 
 fn which(cmd: &str) -> Option<String> {
-    let output = command("where")
-        .arg(cmd)
-        .output()
-        .ok()?;
-    if !output.status.success() {
-        return None;
-    }
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let first = stdout.lines().next()?.trim().to_string();
-    if first.is_empty() { None } else { Some(first) }
+    platform::which(cmd)
 }

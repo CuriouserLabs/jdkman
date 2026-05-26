@@ -31,7 +31,9 @@ export function Dashboard() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const overallStatus = (() => {
     if (!status) return "inactive";
@@ -41,7 +43,11 @@ export function Dashboard() {
   })() as "ok" | "warning" | "error" | "inactive";
 
   const openFolder = async (path: string) => {
-    try { await open(path); } catch { showToast("error", "Could not open folder"); }
+    try {
+      await open(path);
+    } catch {
+      showToast("error", "Could not open folder");
+    }
   };
 
   if (loading) {
@@ -49,30 +55,38 @@ export function Dashboard() {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center space-y-3">
           <Coffee className="w-10 h-10 text-brand-500 mx-auto animate-pulse" />
-          <p className="text-slate-500 text-sm">Loading environment status…</p>
+          <p className="text-slate-500 text-sm">Loading environment status...</p>
         </div>
       </div>
     );
   }
 
   const borderColor =
-    overallStatus === "ok" ? "#10b981" :
-    overallStatus === "warning" ? "#f59e0b" :
-    overallStatus === "error" ? "#ef4444" : "#94a3b8";
+    overallStatus === "ok"
+      ? "#10b981"
+      : overallStatus === "warning"
+        ? "#f59e0b"
+        : overallStatus === "error"
+          ? "#ef4444"
+          : "#94a3b8";
 
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Dashboard</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Current Java environment overview</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          Current Java environment overview for {status?.platform ?? "your system"}
+        </p>
       </div>
 
-      {status && !status.is_elevated && (
+      {status && status.platform === "Windows" && !status.is_elevated && (
         <Card className="border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
           <div className="flex items-start gap-3">
             <TriangleAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">App is not running as Administrator</p>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                App is not running as Administrator
+              </p>
               <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
                 User environment updates will still work, but system-wide HKLM JAVA_HOME and PATH updates will be skipped until you reopen the app as Administrator.
               </p>
@@ -81,18 +95,24 @@ export function Dashboard() {
         </Card>
       )}
 
-      {/* Status hero */}
       <Card className="border-l-4" style={{ borderLeftColor: borderColor }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-              overallStatus === "ok" ? "bg-emerald-50 dark:bg-emerald-900/30" :
-              overallStatus === "warning" ? "bg-amber-50 dark:bg-amber-900/30" :
-              overallStatus === "error" ? "bg-red-50 dark:bg-red-900/30" :
-              "bg-slate-50 dark:bg-slate-800"
-            }`}>
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                overallStatus === "ok"
+                  ? "bg-emerald-50 dark:bg-emerald-900/30"
+                  : overallStatus === "warning"
+                    ? "bg-amber-50 dark:bg-amber-900/30"
+                    : overallStatus === "error"
+                      ? "bg-red-50 dark:bg-red-900/30"
+                      : "bg-slate-50 dark:bg-slate-800"
+              }`}
+            >
               {overallStatus === "ok" && <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />}
-              {overallStatus === "warning" && <TriangleAlert className="w-6 h-6 text-amber-600 dark:text-amber-400" />}
+              {overallStatus === "warning" && (
+                <TriangleAlert className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              )}
               {overallStatus === "error" && <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />}
               {overallStatus === "inactive" && <Coffee className="w-6 h-6 text-slate-400" />}
             </div>
@@ -118,7 +138,6 @@ export function Dashboard() {
         </div>
       </Card>
 
-      {/* Info grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <div className="flex items-center gap-2 mb-3">
@@ -159,7 +178,11 @@ export function Dashboard() {
               <p className="text-sm text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <TriangleAlert className="w-4 h-4" /> Not found in this session
               </p>
-              <p className="text-xs text-slate-400 mt-1">Open a new terminal to pick up env changes</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {status?.platform === "Windows"
+                  ? "Open a new terminal to pick up env changes"
+                  : "Run jdkman export-shell <alias> in your terminal to apply the selected alias"}
+              </p>
             </div>
           )}
         </Card>

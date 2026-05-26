@@ -30,11 +30,13 @@
     "active": true,
     "targets": "all",
     "resources": [
+      "resources/jdkman",
       "resources/jdkman.exe"
     ],
     "icon": [
       "icons/icon.png",
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.icns"
     ],
     "windows": {
       "nsis": {

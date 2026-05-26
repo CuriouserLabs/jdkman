@@ -20,6 +20,10 @@ const resourceCliPath = path.join(
   resourceDir,
   process.platform === "win32" ? "jdkman.exe" : "jdkman",
 );
+const compatCliPath = path.join(
+  resourceDir,
+  process.platform === "win32" ? "jdkman" : "jdkman.exe",
+);
 
 async function main() {
   await execFileAsync("cargo", ["build", "-p", "java-manager-cli", "--release"], {
@@ -28,6 +32,7 @@ async function main() {
 
   await mkdir(resourceDir, { recursive: true });
   await copyFile(sourceCliPath, resourceCliPath);
+  await copyFile(sourceCliPath, compatCliPath);
 
   process.stdout.write(`Prepared CLI resource at ${resourceCliPath}\n`);
 }

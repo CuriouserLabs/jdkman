@@ -43,7 +43,15 @@ export interface VerifyResult {
   path_valid: boolean;
 }
 
+export interface UseResult {
+  platform: string;
+  warning: string | null;
+  requires_terminal_restart: boolean;
+  requires_shell_eval: boolean;
+}
+
 export interface EnvStatus {
+  platform: string;
   java_home: string | null;
   java_home_valid: boolean;
   current_alias: string | null;

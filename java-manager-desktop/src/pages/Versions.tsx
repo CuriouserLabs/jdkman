@@ -39,23 +39,46 @@ export function Versions() {
 
   const load = async () => {
     setLoading(true);
-    try { setVersions(await listVersions()); } catch (e) { showToast("error", String(e)); }
-    finally { setLoading(false); }
+    try {
+      setVersions(await listVersions());
+    } catch (e) {
+      showToast("error", String(e));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const handleUse = async (alias: string) => {
     setBusyAlias(alias);
     try {
-      const warning = await useJdk(alias);
-      showToast("success", `Switched to ${alias}. Open a new terminal for changes to take effect.`);
-      if (warning) {
-        showToast("warning", `System environment not updated — run as Administrator to apply changes system-wide.`);
+      const result = await useJdk(alias);
+      if (result.requires_shell_eval) {
+        showToast(
+          "success",
+          `Selected ${alias}. Run 'jdkman export-shell ${alias} --shell bash' in your terminal to apply it.`
+        );
+      } else {
+        showToast(
+          "success",
+          `Switched to ${alias}. Open a new terminal for changes to take effect.`
+        );
+      }
+      if (result.warning) {
+        showToast(
+          "warning",
+          "System environment not updated. Run as Administrator to apply changes system-wide."
+        );
       }
       await load();
-    } catch (e) { showToast("error", String(e)); }
-    finally { setBusyAlias(null); }
+    } catch (e) {
+      showToast("error", String(e));
+    } finally {
+      setBusyAlias(null);
+    }
   };
 
   const handleRemove = async () => {
@@ -65,18 +88,28 @@ export function Versions() {
       showToast("success", `Removed ${removeTarget}`);
       setRemoveTarget(null);
       await load();
-    } catch (e) { showToast("error", String(e)); }
+    } catch (e) {
+      showToast("error", String(e));
+    }
   };
 
   const handleVerify = async (alias: string) => {
     setBusyAlias(alias);
-    try { setVerifyResult(await verifyJdk(alias)); }
-    catch (e) { showToast("error", String(e)); }
-    finally { setBusyAlias(null); }
+    try {
+      setVerifyResult(await verifyJdk(alias));
+    } catch (e) {
+      showToast("error", String(e));
+    } finally {
+      setBusyAlias(null);
+    }
   };
 
   const openFolder = async (path: string) => {
-    try { await openShell(path); } catch { showToast("error", "Could not open folder"); }
+    try {
+      await openShell(path);
+    } catch {
+      showToast("error", "Could not open folder");
+    }
   };
 
   return (
@@ -101,7 +134,9 @@ export function Versions() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse"><div className="h-16 bg-slate-100 dark:bg-slate-700 rounded" /></Card>
+            <Card key={i} className="animate-pulse">
+              <div className="h-16 bg-slate-100 dark:bg-slate-700 rounded" />
+            </Card>
           ))}
         </div>
       ) : versions.length === 0 ? (
@@ -132,7 +167,15 @@ export function Versions() {
       )}
 
       {verifyResult && <VerifyModal result={verifyResult} onClose={() => setVerifyResult(null)} />}
-      {showAdd && <AddJdkModal onClose={() => setShowAdd(false)} onAdded={async () => { setShowAdd(false); await load(); }} />}
+      {showAdd && (
+        <AddJdkModal
+          onClose={() => setShowAdd(false)}
+          onAdded={async () => {
+            setShowAdd(false);
+            await load();
+          }}
+        />
+      )}
       <ConfirmModal
         open={!!removeTarget}
         title={`Remove ${removeTarget}?`}
@@ -145,21 +188,47 @@ export function Versions() {
   );
 }
 
-function VersionCard({ version: v, busy, onUse, onRemove, onVerify, onOpenFolder }: {
-  version: JavaVersion; busy: boolean;
-  onUse: () => void; onRemove: () => void; onVerify: () => void; onOpenFolder: () => void;
+function VersionCard({
+  version: v,
+  busy,
+  onUse,
+  onRemove,
+  onVerify,
+  onOpenFolder,
+}: {
+  version: JavaVersion;
+  busy: boolean;
+  onUse: () => void;
+  onRemove: () => void;
+  onVerify: () => void;
+  onOpenFolder: () => void;
 }) {
   return (
-    <Card className={clsx("transition-colors", v.is_current && "ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900")}>
+    <Card
+      className={clsx(
+        "transition-colors",
+        v.is_current && "ring-2 ring-brand-500 ring-offset-1 dark:ring-offset-slate-900"
+      )}
+    >
       <div className="flex items-center gap-4">
-        <div className={clsx("w-2 h-2 rounded-full flex-shrink-0",
-          v.is_current ? "bg-brand-500" : v.is_valid ? "bg-slate-300 dark:bg-slate-600" : "bg-red-500")} />
+        <div
+          className={clsx(
+            "w-2 h-2 rounded-full flex-shrink-0",
+            v.is_current
+              ? "bg-brand-500"
+              : v.is_valid
+                ? "bg-slate-300 dark:bg-slate-600"
+                : "bg-red-500"
+          )}
+        />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">{v.alias}</span>
             {v.is_current && <StatusBadge status="ok" label="Current" />}
             {!v.is_valid && <StatusBadge status="error" label="Invalid path" />}
-            {v.detected_version && <span className="text-xs text-slate-500 dark:text-slate-400">Java {v.detected_version}</span>}
+            {v.detected_version && (
+              <span className="text-xs text-slate-500 dark:text-slate-400">Java {v.detected_version}</span>
+            )}
             {v.vendor && <span className="text-xs text-slate-400 dark:text-slate-500">{v.vendor}</span>}
           </div>
           <p className="text-xs text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate">{v.path}</p>
@@ -176,8 +245,12 @@ function VersionCard({ version: v, busy, onUse, onRemove, onVerify, onOpenFolder
               <Zap className="w-3.5 h-3.5" /> Use
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={onRemove}
-            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            className="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -197,21 +270,29 @@ function VerifyModal({ result, onClose }: { result: VerifyResult; onClose: () =>
         </div>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            {result.path_valid
-              ? <CheckCircle className="w-4 h-4 text-emerald-500" />
-              : <XCircle className="w-4 h-4 text-red-500" />}
-            <span className="text-sm text-slate-700 dark:text-slate-200">Path {result.path_valid ? "is valid" : "is invalid"}</span>
+            {result.path_valid ? (
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+            ) : (
+              <XCircle className="w-4 h-4 text-red-500" />
+            )}
+            <span className="text-sm text-slate-700 dark:text-slate-200">
+              Path {result.path_valid ? "is valid" : "is invalid"}
+            </span>
           </div>
           {result.java_version_output && (
             <div>
               <p className="text-xs text-slate-500 mb-1">java -version:</p>
-              <pre className="font-mono text-xs bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700 whitespace-pre-wrap">{result.java_version_output}</pre>
+              <pre className="font-mono text-xs bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700 whitespace-pre-wrap">
+                {result.java_version_output}
+              </pre>
             </div>
           )}
           {result.javac_version_output && (
             <div>
               <p className="text-xs text-slate-500 mb-1">javac -version:</p>
-              <pre className="font-mono text-xs bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700 whitespace-pre-wrap">{result.javac_version_output}</pre>
+              <pre className="font-mono text-xs bg-slate-50 dark:bg-slate-900 rounded-lg p-3 border border-slate-200 dark:border-slate-700 whitespace-pre-wrap">
+                {result.javac_version_output}
+              </pre>
             </div>
           )}
           {!result.java_version_output && !result.javac_version_output && (
@@ -219,7 +300,9 @@ function VerifyModal({ result, onClose }: { result: VerifyResult; onClose: () =>
           )}
         </div>
         <div className="flex justify-end mt-5">
-          <Button variant="secondary" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="secondary" size="sm" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </div>
     </div>
@@ -244,7 +327,9 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
         setProbeInfo(null);
         await probePath(selected);
       }
-    } catch (e) { showToast("error", String(e)); }
+    } catch (e) {
+      showToast("error", String(e));
+    }
   };
 
   const probePath = async (p: string) => {
@@ -259,7 +344,9 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
     } catch (e) {
       setError(String(e));
       setProbeInfo(null);
-    } finally { setProbing(false); }
+    } finally {
+      setProbing(false);
+    }
   };
 
   const handleAdd = async () => {
@@ -269,8 +356,11 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
       await addJdk(alias.trim(), path.trim());
       showToast("success", `Added ${alias.trim()} successfully`);
       onAdded();
-    } catch (e) { showToast("error", String(e)); }
-    finally { setAdding(false); }
+    } catch (e) {
+      showToast("error", String(e));
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -282,17 +372,24 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
           <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">JDK Path</label>
             <div className="flex gap-2">
-              <input type="text"
+              <input
+                type="text"
                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
                 placeholder={`C:\\Program Files\\Java\\jdk-21`}
                 value={path}
-                onChange={(e) => { setPath(e.target.value); setError(null); setProbeInfo(null); }}
+                onChange={(e) => {
+                  setPath(e.target.value);
+                  setError(null);
+                  setProbeInfo(null);
+                }}
                 onBlur={() => probePath(path)}
               />
-              <Button variant="secondary" size="sm" onClick={browse}>Browse</Button>
+              <Button variant="secondary" size="sm" onClick={browse}>
+                Browse
+              </Button>
             </div>
           </div>
-          {probing && <p className="text-xs text-slate-500 animate-pulse">Probing JDK…</p>}
+          {probing && <p className="text-xs text-slate-500 animate-pulse">Probing JDK...</p>}
           {probeInfo && (
             <div className="flex items-center gap-2 p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
               <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
@@ -309,7 +406,8 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
           )}
           <div>
             <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">Alias</label>
-            <input type="text"
+            <input
+              type="text"
               className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
               placeholder="java21"
               value={alias}
@@ -319,9 +417,16 @@ function AddJdkModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =>
           </div>
         </div>
         <div className="flex items-center justify-end gap-3 mt-6">
-          <Button variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" size="sm" onClick={handleAdd} loading={adding}
-            disabled={!path.trim() || !alias.trim() || !!error}>
+          <Button variant="secondary" size="sm" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleAdd}
+            loading={adding}
+            disabled={!path.trim() || !alias.trim() || !!error}
+          >
             Add JDK
           </Button>
         </div>
