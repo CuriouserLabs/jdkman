@@ -5,12 +5,57 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Release tag to publish, for example v0.1.0"
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
+  prepare-release:
+    runs-on: ubuntu-22.04
+    outputs:
+      tag_name: ${{ steps.vars.outputs.tag_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: vars
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag_name=${{ inputs.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag_name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Ensure tag exists for manual release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG_NAME: ${{ steps.vars.outputs.tag_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists locally."
+          else
+            git tag "$TAG_NAME" "${{ github.sha }}"
+          fi
+
+          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep -q "$TAG_NAME"; then
+            echo "Tag $TAG_NAME already exists on origin."
+          else
+            git push origin "refs/tags/$TAG_NAME"
+          fi
+
   publish-tauri:
+    needs: prepare-release
     strategy:
       fail-fast: false
       matrix:
@@ -63,14 +108,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: java-manager-desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: "JDK Manager ${{ github.ref_name }}"
-          releaseBody: "Automated release for ${{ github.ref_name }}"
-          releaseDraft: true
+          tagName: ${{ needs.prepare-release.outputs.tag_name }}
+          releaseName: "JDK Manager ${{ needs.prepare-release.outputs.tag_name }}"
+          releaseBody: "Automated release for ${{ needs.prepare-release.outputs.tag_name }}"
+          releaseDraft: false
           prerelease: false
 
   publish-cli:
-    needs: publish-tauri
+    needs:
+      - prepare-release
+      - publish-tauri
     strategy:
       fail-fast: false
       matrix:
@@ -106,16 +153,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-        run: gh release upload "${{ github.ref_name }}" "${{ matrix.binary_path }}#${{ matrix.asset_name }}" --clobber
-
-  finalize-release:
-    needs:
-      - publish-tauri
-      - publish-cli
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Publish draft release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release edit "${{ github.ref_name }}" --draft=false
+        run: gh release upload "${{ needs.prepare-release.outputs.tag_name }}" "${{ matrix.binary_path }}#${{ matrix.asset_name }}" --clobber
