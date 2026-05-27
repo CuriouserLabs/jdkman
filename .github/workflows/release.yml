@@ -35,25 +35,6 @@ jobs:
             echo "tag_name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Ensure tag exists for manual release
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          TAG_NAME: ${{ steps.vars.outputs.tag_name }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-            echo "Tag $TAG_NAME already exists locally."
-          else
-            git tag "$TAG_NAME" "${{ github.sha }}"
-          fi
-
-          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep -q "$TAG_NAME"; then
-            echo "Tag $TAG_NAME already exists on origin."
-          else
-            git push origin "refs/tags/$TAG_NAME"
-          fi
-
   publish-tauri:
     needs: prepare-release
     strategy:
@@ -109,6 +90,7 @@ jobs:
         with:
           projectPath: java-manager-desktop
           tagName: ${{ needs.prepare-release.outputs.tag_name }}
+          releaseCommitish: ${{ github.sha }}
           releaseName: "JDK Manager ${{ needs.prepare-release.outputs.tag_name }}"
           releaseBody: "Automated release for ${{ needs.prepare-release.outputs.tag_name }}"
           releaseDraft: false
