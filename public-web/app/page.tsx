@@ -1,479 +1,245 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { PageShell } from "./components/site-chrome";
+import {
+  DOWNLOAD_PATH,
+  DOWNLOAD_URL,
+  GETTING_STARTED_PATH,
+  PRIMARY_KEYWORDS,
+  REPO_URL,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TAGLINE,
+  SITE_URL,
+  absoluteUrl,
+} from "./site";
 
-const NAV = [
-  { label: "Features", href: "#features" },
-  { label: "CLI", href: "#cli" },
-  { label: "Desktop App", href: "#desktop" },
-  { label: "Downloads", href: "#download" },
-] as const;
+export const metadata: Metadata = {
+  title: "JDK Manager for Windows | Java Version Manager",
+  description:
+    "JDK Manager is a Java version manager for Windows that helps you discover JDKs, switch JAVA_HOME, fix PATH issues, and manage multiple JDK versions with a CLI and desktop app.",
+  alternates: {
+    canonical: "/",
+  },
+};
 
-const RELEASES_URL = "https://github.com/PrabathMadushan/jdkman/releases";
-const REPO_URL = "https://github.com/PrabathMadushan/jdkman";
-const DOCS_URL = "https://github.com/PrabathMadushan/jdkman/blob/main/README.md";
-
-const FEATURES = [
+const features = [
   {
-    icon: "🔍",
-    title: "Cross-platform JDK discovery",
-    body: "Find installed JDKs from common locations on Windows, macOS, and Linux, plus JAVA_HOME when it already exists.",
+    icon: "Scan",
+    title: "Discover installed JDKs on Windows",
+    body: "Find Adoptium, Corretto, Zulu, BellSoft, GraalVM, Oracle JDK, and other installations without hunting through Program Files or the registry yourself.",
   },
   {
-    icon: "🏷️",
-    title: "Alias-based switching",
-    body: "Use simple names like java8, java17, or graal21 and switch the active version from the CLI or desktop app.",
+    icon: "Switch",
+    title: "Switch JAVA_HOME and PATH safely",
+    body: "Use a Rust CLI or desktop UI to activate the right JDK version for the project you are working on, without manual environment-variable edits.",
   },
   {
-    icon: "🩺",
-    title: "Built-in diagnostics",
-    body: "Check config health, invalid JDK paths, JAVA_HOME mismatches, and PATH resolution problems with one doctor command.",
-  },
-  {
-    icon: "📦",
-    title: "Shared CLI and desktop config",
-    body: "The Rust CLI and Tauri desktop app read the same config, so your aliases stay in sync across both interfaces.",
-  },
-  {
-    icon: "⚡",
-    title: "Shell exports for every session",
-    body: "Export ready-to-run commands for PowerShell, CMD, bash, zsh, and fish when you need the current shell updated immediately.",
-  },
-  {
-    icon: "📥",
-    title: "Multi-OS releases",
-    body: "Ship installers and bundles for Windows, macOS, and Linux, plus raw CLI binaries for terminal-first users.",
+    icon: "Doctor",
+    title: "Fix broken Java environments faster",
+    body: "Run diagnostics to see why java, javac, JAVA_HOME, or PATH are wrong and get clear guidance for repairing the setup.",
   },
 ] as const;
 
-const CLI_BLOCKS = [
+const searchGuides = [
   {
-    label: "Discover and add JDKs",
-    lines: [
-      { prompt: "$", cmd: "jdkman scan --auto-add" },
-      {
-        output:
-          "Found 3 JDK(s):\n  [new] /usr/lib/jvm/temurin-21 - Eclipse Adoptium 21.0.3\n    Added as 'java21'\n  [new] /Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home - Eclipse Adoptium 17.0.11",
-      },
-    ],
+    href: "/guides/switch-java-version-windows",
+    title: "How to switch Java versions on Windows",
+    body: "A practical guide for moving between Java 8, 11, 17, and 21 without breaking your terminal or build tools.",
   },
   {
-    label: "Switch by alias",
-    lines: [
-      { prompt: "$", cmd: "jdkman use java21" },
-      {
-        output:
-          "Active version : java21\nJAVA_HOME      : /usr/lib/jvm/temurin-21\nSelected 'java21' for Linux.\nApply it in the current shell with 'jdkman export-shell java21 --shell bash'.",
-      },
-    ],
+    href: "/guides/fix-java-home-path-windows",
+    title: "How to fix JAVA_HOME and PATH on Windows",
+    body: "Learn the clean mental model for Java environment variables and how to repair mismatches when java resolves incorrectly.",
   },
   {
-    label: "Apply to the current shell",
-    lines: [
-      { prompt: "$", cmd: "jdkman export-shell java21 --shell zsh" },
-      {
-        output:
-          "export JAVA_HOME='/usr/lib/jvm/temurin-21'\nexport PATH='/usr/lib/jvm/temurin-21/bin':\"$PATH\"",
-      },
-    ],
-  },
-  {
-    label: "Diagnose problems",
-    lines: [
-      { prompt: "$", cmd: "jdkman doctor" },
-      {
-        output:
-          "Config file loaded successfully\njava in PATH found\nJAVA_HOME mismatch warning with selected alias guidance",
-      },
-    ],
+    href: "/guides/manage-multiple-jdks-windows",
+    title: "How to manage multiple JDKs on Windows",
+    body: "See the workflow for keeping legacy and modern Java projects side by side on one Windows machine.",
   },
 ] as const;
 
-const DESKTOP_PAGES = [
-  { name: "Dashboard", desc: "See the active alias, JAVA_HOME, PATH state, and java -version output instantly." },
-  { name: "Versions", desc: "Add, verify, remove, and switch JDK aliases from one place." },
-  { name: "Scan", desc: "Search common JDK install locations for the current platform." },
-  { name: "Diagnostics", desc: "Surface config issues, broken paths, and shell activation problems." },
-  { name: "Settings", desc: "Review config paths, import JAVA_HOME, and understand platform-specific behavior." },
-] as const;
+const softwareApplicationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: SITE_NAME,
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Windows",
+  description: SITE_DESCRIPTION,
+  url: SITE_URL,
+  downloadUrl: DOWNLOAD_URL,
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+  },
+  brand: {
+    "@type": "Brand",
+    name: SITE_NAME,
+  },
+  author: {
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: REPO_URL,
+  },
+  keywords: PRIMARY_KEYWORDS.join(", "),
+};
 
-const AUDIENCES = [
-  {
-    title: "Multi-project developers",
-    desc: "Jump between Java 8, 11, 17, and 21 across client work, legacy systems, and modern services without manual env edits.",
-    icon: "🔁",
-  },
-  {
-    title: "Teams shipping on every OS",
-    desc: "Use one shared workflow for Windows, macOS, and Linux instead of teaching three different JDK switching habits.",
-    icon: "🌍",
-  },
-  {
-    title: "People fixing broken setups",
-    desc: "Use diagnostics to understand why java resolves incorrectly, why JAVA_HOME is stale, or why a JDK path is invalid.",
-    icon: "🛠",
-  },
-] as const;
-
-const DOWNLOADS = [
-  {
-    os: "Windows",
-    formats: "MSI, NSIS setup, raw CLI",
-    body: "Installer-friendly release path for desktop users, plus the CLI binary for terminal workflows.",
-    href: RELEASES_URL,
-    cta: "Open Windows Releases",
-  },
-  {
-    os: "macOS",
-    formats: "DMG, app bundle, raw CLI",
-    body: "Ship desktop bundles for app users and standalone CLI binaries for shell-first workflows.",
-    href: RELEASES_URL,
-    cta: "Open macOS Releases",
-  },
-  {
-    os: "Linux",
-    formats: "AppImage, DEB, raw CLI",
-    body: "Offer portable desktop packaging and direct CLI downloads for distro-friendly adoption.",
-    href: RELEASES_URL,
-    cta: "Open Linux Releases",
-  },
-] as const;
-
-const VENDORS = [
-  "Adoptium",
-  "Corretto",
-  "Zulu",
-  "BellSoft",
-  "GraalVM",
-  "SapMachine",
-  "Oracle JDK",
-] as const;
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+};
 
 export default function Home() {
   return (
     <>
-      <section className="hero-section">
-        <div className="hero-grid" />
-        <div className="hero-glow hero-glow-1" />
-        <div className="hero-glow hero-glow-2" />
-        <div className="hero-glow hero-glow-3" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([softwareApplicationJsonLd, websiteJsonLd]),
+        }}
+      />
 
-        <div className="container-narrow relative z-10">
-          <header className="flex items-center justify-between gap-4 py-5">
-            <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-white/10 ring-1 ring-white/10">
-                <Image src="/app-logo.png" alt="JDK Manager" width={32} height={32} className="h-full w-full object-cover" priority />
-              </span>
-              <span className="text-sm font-semibold tracking-wide text-white/90">JDK Manager</span>
-            </div>
-            <nav className="hidden items-center gap-6 md:flex">
-              {NAV.map((n) => (
-                <a key={n.href} href={n.href} className="nav-link">
-                  {n.label}
-                </a>
-              ))}
-              <a href="#download" className="btn btn-primary text-sm" style={{ minHeight: "2.4rem", padding: "0 1.1rem", fontSize: "0.82rem" }}>
-                Downloads
-              </a>
-            </nav>
-            <a href="#download" className="btn btn-primary md:hidden" style={{ minHeight: "2.4rem", padding: "0 1rem", fontSize: "0.82rem" }}>
-              Download
-            </a>
-          </header>
-
-          <div className="pb-16 pt-12 md:pb-24 md:pt-20">
-            <div className="max-w-3xl space-y-6 animate-fade-up">
-              <p className="eyebrow eyebrow-light">Cross-platform Java version manager</p>
-              <h1 className="text-4xl font-bold leading-[1.08] tracking-[-0.04em] text-white sm:text-5xl md:text-6xl lg:text-[4.2rem]">
-                Switch Java versions
-                <br className="hidden sm:inline" /> without the <span className="gradient-text">environment-variable pain.</span>
-              </h1>
-              <p className="max-w-2xl text-base leading-relaxed text-white/55 md:text-lg md:leading-8">
-                JDK Manager discovers installed JDKs, lets you switch between them with a single command or click, validates broken setups, and keeps{" "}
-                <code className="inline-code-light">JAVA_HOME</code> and <code className="inline-code-light">PATH</code> under control across Windows, macOS, and Linux.
-              </p>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                <a href="#download" className="btn btn-primary">
-                  Download for Your OS
-                </a>
-                <a href="#cli" className="btn btn-ghost">
-                  See the CLI →
-                </a>
-              </div>
-            </div>
-
-            <div className="mt-12 grid gap-3 sm:grid-cols-3 animate-fade-up delay-2">
-              <Stat value="Windows + macOS + Linux" label="One toolchain across all major desktop OSes" />
-              <Stat value="CLI + Desktop" label="Two interfaces sharing the same JDK inventory" />
-              <Stat value="Shell-aware activation" label="PowerShell, CMD, bash, zsh, and fish support" />
-            </div>
+      <PageShell
+        eyebrow={SITE_TAGLINE}
+        title="A Java version manager for Windows that keeps JAVA_HOME under control."
+        intro="JDK Manager helps you discover installed JDKs, switch Java versions on Windows, fix PATH and JAVA_HOME issues, and manage multiple JDK versions with a Rust CLI and desktop app."
+      >
+        <section className="container-narrow py-20 md:py-28">
+          <div className="max-w-3xl space-y-6">
+            <p className="eyebrow eyebrow-brand">Why developers search for JDK Manager</p>
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+              Stop editing PATH by hand every time you change Java projects.
+            </h2>
+            <p className="text-base leading-relaxed text-[var(--muted-2)] md:text-lg">
+              If you need a Java version manager for Windows, you usually want one of three things:
+              a fast way to switch Java versions, a clean way to manage multiple JDKs, or a safer way
+              to fix JAVA_HOME and PATH when they drift out of sync. JDK Manager is built specifically
+              for those workflows.
+            </p>
           </div>
-        </div>
-      </section>
 
-      <div className="border-b border-[var(--panel-border)] bg-[var(--page-bg)] py-5">
-        <div className="container-narrow flex flex-wrap items-center justify-center gap-2.5">
-          <span className="mr-2 text-xs font-medium text-[var(--muted)]">Works well with:</span>
-          {VENDORS.map((v) => (
-            <span key={v} className="vendor-chip">
-              <span className="dot" />
-              {v}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <section className="container-narrow py-20 md:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow eyebrow-brand">Why it exists</p>
-          <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            A cleaner way to manage multiple JDKs everywhere.
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-[var(--muted-2)] md:text-lg">
-            Managing Java versions usually means editing <code className="inline-code">JAVA_HOME</code>, fighting <code className="inline-code">PATH</code> ordering, and guessing which JDK is really active. JDK Manager replaces that with named aliases, automatic discovery, one-step switching, and built-in diagnostics.
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-2 md:grid-cols-2">
-          <div className="surface-card-flat flex items-start gap-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand)] text-lg text-white">⌨</span>
-            <div>
-              <h3 className="text-lg font-semibold">Rust CLI</h3>
-              <p className="mt-1 text-sm leading-relaxed text-[var(--muted-2)]">
-                The <code className="inline-code">jdkman</code> binary is fast, scriptable, and practical for terminal workflows on all supported platforms.
-              </p>
-            </div>
-          </div>
-          <div className="surface-card-flat flex items-start gap-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-lg text-white">🖥</span>
-            <div>
-              <h3 className="text-lg font-semibold">Tauri Desktop App</h3>
-              <p className="mt-1 text-sm leading-relaxed text-[var(--muted-2)]">
-                A native desktop layer for developers who want visual discovery, validation, and one-click switching alongside the CLI.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="features" className="bg-[var(--page-bg-2)] py-20 md:py-28">
-        <div className="container-narrow">
-          <p className="eyebrow eyebrow-brand">Features</p>
-          <h2 className="mt-4 max-w-xl text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            Everything you need to wrangle Java across your machines.
-          </h2>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => (
-              <article key={f.title} className="surface-card">
-                <span className="text-2xl">{f.icon}</span>
-                <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted-2)]">{f.body}</p>
+          <div id="features" className="mt-12 grid gap-4 md:grid-cols-3">
+            {features.map((feature) => (
+              <article key={feature.title} className="surface-card">
+                <div className="feature-icon">{feature.icon}</div>
+                <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted-2)]">{feature.body}</p>
               </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="cli" className="section-dark py-20 md:py-28">
-        <div className="container-narrow">
-          <div className="grid items-start gap-12 lg:grid-cols-[0.42fr_0.58fr]">
+        <section className="section-dark py-20 md:py-28">
+          <div className="container-narrow grid gap-12 lg:grid-cols-[0.48fr_0.52fr]">
             <div>
-              <p className="eyebrow eyebrow-light">CLI</p>
+              <p className="eyebrow eyebrow-light">Download and install</p>
               <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-                Sharp, practical terminal workflow.
+                Download the Windows installer, then choose CLI or desktop workflow.
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-white/50 md:text-lg">
-                Scan common install roots, list aliases, switch active versions, run diagnostics, and export commands for the current shell session.
+              <p className="mt-4 text-base leading-relaxed text-white/55 md:text-lg">
+                The installer gives you the desktop app, optional CLI access, and a cleaner way to manage
+                JDKs than manual registry edits or environment-variable copy/paste.
               </p>
-              <div className="mt-6">
-                <a href="#download" className="btn btn-ghost">
-                  Get the CLI →
-                </a>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link href="/download" className="btn btn-primary">
+                  Open download page
+                </Link>
+                <Link href={DOWNLOAD_PATH} className="btn btn-ghost">
+                  Direct MSI download
+                </Link>
               </div>
             </div>
 
-            <div className="space-y-4">
-              {CLI_BLOCKS.map((block) => (
-                <div key={block.label} className="terminal-frame">
-                  <div className="terminal-titlebar">
-                    <span className="terminal-dot" />
-                    <span className="terminal-dot" />
-                    <span className="terminal-dot" />
-                    <span className="terminal-title">{block.label}</span>
-                  </div>
-                  <div className="terminal-body space-y-1">
-                    {block.lines.map((line, i) =>
-                      "cmd" in line ? (
-                        <div key={i} className="terminal-line">
-                          <span className="prompt">{line.prompt}</span>
-                          <code>{line.cmd}</code>
-                        </div>
-                      ) : (
-                        <pre key={i} className="terminal-output whitespace-pre-wrap">
-                          {line.output}
-                        </pre>
-                      )
-                    )}
-                  </div>
+            <div className="terminal-frame">
+              <div className="terminal-titlebar">
+                <span className="terminal-dot" />
+                <span className="terminal-dot" />
+                <span className="terminal-dot" />
+                <span className="terminal-title">Windows JDK workflow</span>
+              </div>
+              <div className="terminal-body space-y-3">
+                <div className="terminal-line">
+                  <span className="prompt">$</span>
+                  <code>jdkman scan --auto-add</code>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="desktop" className="container-narrow py-20 md:py-28">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow eyebrow-brand">Desktop app</p>
-          <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-            A visual dashboard for the same workflow.
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-[var(--muted-2)] md:text-lg">
-            The Tauri app wraps the same capabilities in a friendlier experience. Discover JDKs visually, inspect your environment, and switch versions with one click.
-          </p>
-        </div>
-
-        <div className="mx-auto mt-12 max-w-4xl">
-          <div className="app-frame">
-            <div className="app-titlebar">
-              <span className="terminal-dot" />
-              <span className="terminal-dot" />
-              <span className="terminal-dot" />
-              <span className="ml-2 text-xs font-medium text-[var(--muted)]">JDK Manager</span>
-            </div>
-            <div className="grid md:grid-cols-[13rem_1fr]">
-              <div className="app-sidebar hidden md:block">
-                {DESKTOP_PAGES.map((p, i) => (
-                  <div key={p.name} className={`app-sidebar-item ${i === 0 ? "active" : ""}`}>
-                    <span className="text-sm">{["📊", "📦", "🔍", "🩺", "⚙️"][i]}</span>
-                    {p.name}
-                  </div>
-                ))}
-              </div>
-              <div className="p-6 md:p-8">
-                <div className="space-y-5">
-                  {DESKTOP_PAGES.map((p, i) => (
-                    <div key={p.name} className="flex items-start gap-3">
-                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[var(--brand)]/10 text-sm">
-                        {["📊", "📦", "🔍", "🩺", "⚙️"][i]}
-                      </span>
-                      <div>
-                        <h4 className="text-sm font-semibold">{p.name}</h4>
-                        <p className="mt-0.5 text-sm text-[var(--muted-2)]">{p.desc}</p>
-                      </div>
-                    </div>
-                  ))}
+                <pre className="terminal-output whitespace-pre-wrap">
+                  Found existing JDKs and imported them as aliases for safer switching.
+                </pre>
+                <div className="terminal-line">
+                  <span className="prompt">$</span>
+                  <code>jdkman use java21</code>
                 </div>
+                <pre className="terminal-output whitespace-pre-wrap">
+                  Updates JAVA_HOME and PATH for the active Windows user environment.
+                </pre>
+                <div className="terminal-line">
+                  <span className="prompt">$</span>
+                  <code>jdkman doctor</code>
+                </div>
+                <pre className="terminal-output whitespace-pre-wrap">
+                  Explains what is wrong when java, javac, PATH, or JAVA_HOME are mismatched.
+                </pre>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="mx-auto mt-8 max-w-4xl grid gap-4 md:grid-cols-2">
-          <div className="surface-card-flat">
-            <h3 className="text-sm font-semibold text-[var(--brand)]">Platform-aware switching</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--muted-2)]">
-              Windows can update environment state for future processes, while macOS and Linux lean on shell exports for explicit, session-friendly activation.
-            </p>
-          </div>
-          <div className="surface-card-flat">
-            <h3 className="text-sm font-semibold text-[var(--accent)]">Current session control</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--muted-2)]">
-              Use <code className="inline-code">jdkman export-shell</code> whenever you want the active alias applied immediately in the terminal you already have open.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section id="audience" className="section-dark-alt py-20 md:py-28">
-        <div className="container-narrow">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow eyebrow-light">Who it&apos;s for</p>
-            <h2 className="mt-4 text-3xl font-bold tracking-[-0.03em] md:text-4xl">
-              Made for developers who keep more than one Java version alive.
+        <section className="container-narrow py-20 md:py-28">
+          <div className="max-w-3xl space-y-5">
+            <p className="eyebrow eyebrow-brand">Search guides</p>
+            <h2 className="text-3xl font-bold tracking-[-0.03em] md:text-4xl">
+              Learn how to switch Java versions and manage multiple JDKs on Windows.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-white/50 md:text-lg">
-              Backend teams, Android developers, consultants, and anyone juggling multiple JDK generations across projects and operating systems.
+            <p className="text-base leading-relaxed text-[var(--muted-2)] md:text-lg">
+              These pages target the most common Windows Java setup problems and connect them back to the
+              installer, CLI, and desktop app.
             </p>
           </div>
-          <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-3">
-            {AUDIENCES.map((a) => (
-              <article key={a.title} className="use-case-card">
-                <span className="text-2xl">{a.icon}</span>
-                <h3 className="mt-4 text-lg font-semibold">{a.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/45">{a.desc}</p>
+
+          <div className="mt-12 grid gap-4 md:grid-cols-3">
+            {searchGuides.map((guide) => (
+              <article key={guide.href} className="surface-card-flat">
+                <h3 className="text-lg font-semibold">{guide.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[var(--muted-2)]">{guide.body}</p>
+                <Link href={guide.href} className="mt-5 inline-flex text-sm font-semibold text-[var(--brand)]">
+                  Read guide
+                </Link>
               </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="download" className="container-narrow py-20 md:py-28">
-        <div className="cta-panel relative z-10">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow eyebrow-light">Downloads</p>
-            <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] text-white md:text-4xl">
-              Download JDK Manager for your platform.
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/50">
-              Browse the latest GitHub Releases for installers, desktop bundles, and raw CLI binaries. Ship Windows, macOS, and Linux assets from one release pipeline.
-            </p>
+        <section className="bg-[var(--page-bg-2)] py-20 md:py-28">
+          <div className="container-narrow">
+            <div className="cta-panel relative z-10 text-center">
+              <p className="eyebrow eyebrow-light">Start with the right page</p>
+              <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-bold tracking-[-0.03em] text-white md:text-4xl">
+                Download JDK Manager, open getting started, or inspect the GitHub source.
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/55">
+                Whether you searched for a JDK manager for Windows, a way to switch JAVA_HOME, or a cleaner
+                path setup for multiple Java projects, these are the most useful next steps.
+              </p>
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Link href="/download" className="btn btn-primary">
+                  Download JDK Manager
+                </Link>
+                <Link href={GETTING_STARTED_PATH} className="btn btn-ghost">
+                  Open getting started
+                </Link>
+                <Link href={REPO_URL} className="btn btn-ghost">
+                  View on GitHub
+                </Link>
+              </div>
+            </div>
           </div>
-
-          <div className="download-grid mt-10">
-            {DOWNLOADS.map((item) => (
-              <article key={item.os} className="download-card">
-                <p className="download-os">{item.os}</p>
-                <p className="download-formats">{item.formats}</p>
-                <p className="download-copy">{item.body}</p>
-                <a href={item.href} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full">
-                  {item.cta}
-                </a>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-              Browse All Releases
-            </a>
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-              View on GitHub
-            </a>
-            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">
-              Read the Docs
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <footer className="footer py-8">
-        <div className="container-narrow flex flex-col items-center justify-between gap-4 text-sm text-[var(--muted)] md:flex-row">
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded bg-[var(--brand)] text-[0.65rem] font-bold text-white">J</span>
-            <span className="font-medium text-[var(--ink-soft)]">JDK Manager</span>
-          </div>
-          <p>Cross-platform Java version management. Built with Rust.</p>
-          <div className="flex gap-4">
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--ink)]">
-              GitHub
-            </a>
-            <a href={RELEASES_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--ink)]">
-              Releases
-            </a>
-            <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-[var(--ink)]">
-              Docs
-            </a>
-          </div>
-        </div>
-      </footer>
+        </section>
+      </PageShell>
     </>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="stat-pill">
-      <p className="text-base font-semibold text-white">{value}</p>
-      <p className="mt-1 text-xs leading-relaxed text-white/40">{label}</p>
-    </div>
   );
 }
