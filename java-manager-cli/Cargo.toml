@@ -11,4 +11,4 @@ path = "src/main.rs"
 java-manager-core = { path = "../java-manager-core" }
 clap = { version = "4", features = ["derive", "color"] }
 anyhow = { workspace = true }
-colored = "2"
+colored = "3.1.1"

@@ -1,5 +1,5 @@
 use crate::config::{add_version, load_config, remove_version, set_current, update_version};
-use crate::env::{apply_java_version, get_java_home, ApplyResult};
+use crate::env::get_java_home;
 use crate::errors::{JdkManagerError, Result};
 use crate::java::{
     create_jdk_entry, detect_version, normalize_path, run_java_version, suggest_alias,
