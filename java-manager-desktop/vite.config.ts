@@ -21,7 +21,7 @@ export default defineConfig({
   build: {
     // Tauri uses Chromium on Windows; don't need to target older browsers
     target: "chrome105",
-    minify: "esbuild",
+    minify: "oxc",
     sourcemap: false,
   },
 });
