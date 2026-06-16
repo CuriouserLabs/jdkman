@@ -15,5 +15,5 @@ authors = ["JDK Manager"]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
-thiserror = "1"
-dirs = "5"
+thiserror = "2.0.18"
+dirs = "6.0.0"

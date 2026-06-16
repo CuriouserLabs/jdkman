@@ -29,10 +29,6 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "resources": [
-      "../../target/tauri-resources/jdkman",
-      "../../target/tauri-resources/jdkman.exe"
-    ],
     "icon": [
       "icons/icon.png",
       "icons/icon.ico",
