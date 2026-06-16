@@ -21,9 +21,25 @@ jobs:
       tag_name: ${{ steps.vars.outputs.tag_name }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Verify release originates from main
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+              echo "::error::workflow_dispatch must be run from the main branch (got ${{ github.ref }})."
+              exit 1
+            fi
+          else
+            git fetch origin main
+            if ! git merge-base --is-ancestor "${{ github.sha }}" origin/main; then
+              echo "::error::Tag ${{ github.ref_name }} does not point to a commit on main; aborting release."
+              exit 1
+            fi
+          fi
 
       - name: Resolve release tag
         id: vars
@@ -48,7 +64,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install Linux desktop dependencies
         if: matrix.platform == 'ubuntu-22.04'
@@ -61,9 +77,9 @@ jobs:
             librsvg2-dev \
             patchelf
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: java-manager-desktop/package-lock.json
 
@@ -84,7 +100,7 @@ jobs:
         run: npm run prepare:cli-resource
 
       - name: Build and publish Tauri bundles
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -120,7 +136,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: dtolnay/rust-toolchain@stable
 
