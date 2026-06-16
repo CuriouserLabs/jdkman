@@ -4,7 +4,8 @@ use std::process::Command;
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 pub fn command(program: impl AsRef<std::ffi::OsStr>) -> Command {
-    let command = Command::new(program);
+    #[allow(unused_mut)]
+    let mut command = Command::new(program);
 
     #[cfg(windows)]
     {

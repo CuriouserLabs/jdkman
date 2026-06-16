@@ -58,7 +58,7 @@ mod platform {
         key.set_raw_value(
             "Path",
             &RegValue {
-                bytes: wide_bytes,
+                bytes: wide_bytes.into(),
                 vtype,
             },
         )
@@ -145,7 +145,7 @@ mod platform {
         key.set_raw_value(
             "Path",
             &RegValue {
-                bytes: wide_bytes,
+                bytes: wide_bytes.into(),
                 vtype,
             },
         )
@@ -191,7 +191,7 @@ mod platform {
         unsafe {
             let mut result: usize = 0;
             SendMessageTimeoutW(
-                0xFFFF_isize, // HWND_BROADCAST
+                0xFFFF_isize as *mut std::ffi::c_void, // HWND_BROADCAST
                 WM_SETTINGCHANGE,
                 0,
                 env.as_ptr() as isize,
@@ -204,7 +204,6 @@ mod platform {
     }
 
     pub fn is_elevated() -> bool {
-        use windows_sys::Win32::Foundation::BOOL;
         use windows_sys::Win32::Security::{
             AllocateAndInitializeSid, CheckTokenMembership, FreeSid, SID_IDENTIFIER_AUTHORITY,
         };
@@ -235,8 +234,9 @@ mod platform {
                 return false;
             }
 
-            let mut is_member: BOOL = 0;
-            let membership_ok = CheckTokenMembership(0, admin_group, &mut is_member);
+            let mut is_member: i32 = 0;
+            let membership_ok =
+                CheckTokenMembership(std::ptr::null_mut(), admin_group, &mut is_member);
             FreeSid(admin_group);
 
             membership_ok != 0 && is_member != 0
