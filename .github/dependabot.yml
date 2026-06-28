@@ -1,0 +1,49 @@
+version: 2
+updates:
+  # Rust / Cargo workspace (java-manager-core, -cli, -desktop/src-tauri)
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      cargo-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Next.js public website
+  - package-ecosystem: "npm"
+    directory: "/public-web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Tauri desktop app frontend
+  - package-ecosystem: "npm"
+    directory: "/java-manager-desktop"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # GitHub Actions used in CI/release workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
